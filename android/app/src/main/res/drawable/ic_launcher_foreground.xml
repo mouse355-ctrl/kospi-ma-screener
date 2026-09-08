@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- 5개의 이동평균선이 정배열된 모양 -->
+    <path android:strokeColor="#FF6B6B" android:strokeWidth="3" android:strokeLineCap="round"
+        android:pathData="M24,70 C40,66 52,52 84,30" />
+    <path android:strokeColor="#FFB84D" android:strokeWidth="3" android:strokeLineCap="round"
+        android:pathData="M24,74 C40,70 54,58 84,38" />
+    <path android:strokeColor="#FFE66D" android:strokeWidth="3" android:strokeLineCap="round"
+        android:pathData="M24,78 C42,74 56,64 84,46" />
+    <path android:strokeColor="#4ECDC4" android:strokeWidth="3" android:strokeLineCap="round"
+        android:pathData="M24,82 C44,78 58,70 84,54" />
+    <path android:strokeColor="#45B7D1" android:strokeWidth="3" android:strokeLineCap="round"
+        android:pathData="M24,86 C46,82 60,76 84,62" />
+</vector>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">정배열 스크리너</string>
+    <string name="channel_name">정배열 신규 진입 알림</string>
+    <string name="channel_desc">이동평균 정배열에 새로 진입한 종목이 있을 때 알립니다</string>
+</resources>

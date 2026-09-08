@@ -1,0 +1,4 @@
+# 이 파일을 local.properties 로 복사한 뒤 값을 채우세요 (local.properties 는 git 에 올리지 않음)
+# sdk.dir 은 Android Studio 가 자동으로 추가합니다.
+# 결과 JSON 이 올라가는 폴더 주소 (끝에 / 없이). GitHub 아이디와 저장소 이름을 본인 것으로 바꾸세요.
+DATA_BASE_URL=https://raw.githubusercontent.com/<아이디>/kospi-ma-screener/main/docs/data
