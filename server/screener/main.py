@@ -20,7 +20,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from .data_sources import Provider, StockInfo, get_provider, is_preferred_stock
+from .data_sources import Provider, StockInfo, get_provider
+from .filters import exclusion_reason
 from .indicators import MA_WINDOWS, evaluate_stock
 from .storage import JsonStore
 
@@ -45,13 +46,25 @@ def run(args: argparse.Namespace) -> dict:
     today = datetime.now(KST).date()
     # 200일 이평 + 연속일수 계산 여유분 → 약 2년치 요청 (거래일 ≈ 245/년)
     start = today - timedelta(days=int(os.getenv("LOOKBACK_DAYS", "730")))
-    exclude_pref = os.getenv("EXCLUDE_PREFERRED", "true").lower() == "true"
+    # ETF/ETN/리츠/스팩/우선주 제외 (일반 기업 보통주만 스크리닝)
+    exclude_non_stock = os.getenv("EXCLUDE_NON_STOCK", "true").lower() == "true"
 
     provider = get_provider()
     log.info("데이터 제공자: %s", provider.name)
     stocks = provider.list_stocks(args.market, today)
-    if exclude_pref:
-        stocks = [s for s in stocks if not is_preferred_stock(s.name)]
+    excluded: dict[str, int] = {}
+    if exclude_non_stock:
+        kept = []
+        for s in stocks:
+            reason = exclusion_reason(s.code, s.name)
+            if reason is None:
+                kept.append(s)
+            else:
+                excluded[reason] = excluded.get(reason, 0) + 1
+        log.info("제외: %s (전체 %d → 대상 %d)",
+                 ", ".join(f"{k} {v}" for k, v in sorted(excluded.items())) or "없음",
+                 len(stocks), len(kept))
+        stocks = kept
     if args.limit:
         stocks = stocks[: args.limit]
     log.info("%s 대상 종목 %d개", args.market, len(stocks))
@@ -96,6 +109,7 @@ def run(args: argparse.Namespace) -> dict:
         "new_count": len(new_records),
         "ma_windows": list(MA_WINDOWS),
         "provider": provider.name,
+        "excluded": excluded,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     log.info("기준일 %s: 정배열 %d종목 (신규 %d), 실패 %d", run_date, len(records), len(new_records), failures)

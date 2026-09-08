@@ -32,7 +32,7 @@ cd C:\Users\mouse\AndroidStudioProjects\KospiMaScreener\server
 python -m venv .venv
 .venv\Scripts\activate          # CMD 는 .venv\Scripts\activate.bat
 pip install -r requirements-dev.txt
-pytest                          # 9 passed 확인
+pytest                          # 39 passed 확인
 python -m screener.main --limit 30
 ```
 
@@ -92,7 +92,11 @@ https://raw.githubusercontent.com/<아이디>/kospi-ma-screener/main/docs/data
 - **정배열**: 당일 종가 기준 단순이동평균 `ma10 > ma20 > ma60 > ma120 > ma200` 모두 성립.
 - **유지일수(`days_aligned`)**: 오늘까지 연속으로 정배열이 성립한 거래일 수. `= 1` 이면 **신규 진입(`is_new`)**.
 - **거래대금(`avg_trading_value_20`)**: 종가 × 거래량의 20일 평균(근사, 원). **시가총액(`market_cap`)**: 네이버 종목 목록 기준(원).
-- 우선주(종목명 끝 `우`, `우B`, `우C`, `우(전환)`)는 기본 제외. GitHub **Settings → Secrets and variables → Actions → Variables** 에 `EXCLUDE_PREFERRED=false` 를 추가하면 포함.
+- **스크리닝 대상은 일반 기업 보통주뿐입니다.** 네이버 KOSPI 목록에는 ETF·ETN·리츠·스팩이 모두 들어 있어(약 2,300종목) 그대로 두면 파킹형 ETF 처럼 매일 조금씩 오르는 상품이 정배열 상위를 채웁니다. `server/screener/filters.py` 가 다음을 제외합니다.
+  - **ETF**: 운용사 브랜드로 시작하는 종목명 (KODEX, TIGER, ACE, RISE, KBSTAR, PLUS, HANARO, KOSEF, SOL, 1Q, KIWOOM, 히어로즈 …). 새 브랜드가 생기면 `ETF_BRANDS_LATIN` / `ETF_BRANDS_HANGUL` 목록에 추가하세요.
+  - **ETN**(이름에 ETN), **리츠**(이름이 리츠로 끝남), **스팩**(이름에 스팩)
+  - **우선주**: 종목코드 끝자리가 `0` 이 아닌 종목 (보통주 코드는 끝자리가 0). 이름이 아니라 코드로 판별하므로 `미래에셋대우` 처럼 이름이 '우'로 끝나는 보통주는 남습니다.
+  - 제외 결과는 실행 로그와 `latest.json` 의 `summary.excluded` 에 사유별 개수로 기록됩니다. 전부 포함하려면 GitHub **Settings → Secrets and variables → Actions → Variables** 에 `EXCLUDE_NON_STOCK=false` 를 추가하세요.
 - 기준일은 수집된 일봉 중 가장 최신 거래일. 휴장일에 실행되면 직전 거래일 결과로 갱신. 같은 날 재실행해도 신규 표시는 유지.
 - `docs/data/prices/<code>.json` 에는 정배열 종목만 최근 320거래일 저장(차트에 MA200 까지 표시하기 위함). `docs/data/history/` 에 날짜별 결과 60일분 보관.
 
@@ -111,4 +115,5 @@ https://raw.githubusercontent.com/<아이디>/kospi-ma-screener/main/docs/data
 | 앱 "HTTP 404" | 데이터 주소의 아이디/저장소 이름 오타, 저장소가 Private 인지 |
 | Actions 에서 push 실패(403) | 2단계 4번 Workflow permissions 가 Read and write 인지 |
 | Actions `모든 종목 조회 실패` | 네이버 API 변경 가능성 → PC 에서 `--limit 5` 로 재현 후 파서 수정 |
+| 목록에 ETF 가 섞여 나옴 | 새 운용사 브랜드일 가능성 → `server/screener/filters.py` 의 브랜드 목록에 추가 후 push |
 | 알림이 안 옴 | 알림 권한, 배터리 최적화(절전) 예외 설정, 신규 진입 종목이 실제로 있었는지 (`new_count`) |

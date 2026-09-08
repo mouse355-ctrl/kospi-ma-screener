@@ -23,7 +23,6 @@ import requests
 log = logging.getLogger(__name__)
 
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) KospiMaScreener/1.0"}
-PREFERRED_RE = re.compile(r"(우|우B|우C|우\(전환\))$")
 
 
 @dataclass
@@ -226,7 +225,3 @@ def get_provider() -> Provider:
     except Exception as e:  # noqa: BLE001
         log.warning("네이버 제공자 사용 불가(%s) — pykrx 로 전환", e)
         return PykrxProvider()
-
-
-def is_preferred_stock(name: str) -> bool:
-    return bool(PREFERRED_RE.search(name.strip()))
