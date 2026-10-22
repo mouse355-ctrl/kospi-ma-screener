@@ -15,7 +15,7 @@ KOSPI 전종목 중 **10 · 20 · 60 · 120 · 200일 이동평균선이 정배�
 | 폴더 | 내용 |
 |---|---|
 | `server/` | Python 스크리너 (`screener/`), 단위 테스트 (`tests/`) |
-| `github-workflow/` | 자동 실행 워크플로 파일 — **push 전에 `.github/workflows/` 로 옮겨야 함** |
+| `github-workflow/` | 워크플로 파일 2개 — **push 전에 `.github/workflows/` 로 옮겨야 함** (`daily-screen.yml` 매일 스크리닝, `build-apk.yml` APK 빌드) |
 | `docs/data/` | 스크리닝 결과 JSON (Actions 가 매일 갱신) |
 | `android/` | Android Studio 프로젝트 (Kotlin + Jetpack Compose) |
 
@@ -69,7 +69,22 @@ https://raw.githubusercontent.com/<아이디>/kospi-ma-screener/main/docs/data
 
 브라우저에서 `…/docs/data/latest.json` 을 열어 JSON 이 보이면 정상입니다.
 
-### 3단계. 앱 빌드 및 설치
+### 3단계-A. GitHub 가 APK 를 빌드하게 하기 (Android Studio 불필요, 권장)
+
+1. `github-workflow/build-apk.yml` 을 `.github/workflows/` 로 옮기고 push.
+2. (권장) 저장소 **Settings → Secrets and variables → Actions → New repository secret** 에
+   이름 `DEBUG_KEYSTORE_BASE64`, 값은 `keystore-base64.txt` 의 내용(한 줄 전체)을 붙여넣습니다.
+   서명 키가 고정되어 기존 앱 위에 덮어쓰기 설치가 됩니다. 없으면 매번 기존 앱을 지우고 설치해야 합니다.
+3. **Actions → Build APK → Run workflow**. 5~10분 후 완료.
+4. 폰 브라우저에서 아래 주소를 열면 바로 받아 설치할 수 있습니다(항상 최신 빌드).
+
+   ```
+   https://github.com/<아이디>/kospi-ma-screener/releases/latest/download/kospi-screener.apk
+   ```
+
+   이후에는 `android/` 아래 코드가 push 될 때마다 자동으로 다시 빌드되어 같은 주소에 올라갑니다.
+
+### 3단계-B. Android Studio 로 직접 빌드 (코드를 고칠 때)
 
 1. Android Studio → **Open** → `KospiMaScreener\android` 폴더 → Trust Project → Gradle Sync 완료 대기 (첫 회 5~15분, SDK 설치 안내가 뜨면 모두 Accept).
 2. (선택) `android\local.properties` 에 `DATA_BASE_URL=https://raw.githubusercontent.com/<아이디>/kospi-ma-screener/main/docs/data` 한 줄을 추가하면 앱에 기본값으로 들어갑니다. 넣지 않아도 앱 첫 실행 때 입력 창이 뜹니다.
