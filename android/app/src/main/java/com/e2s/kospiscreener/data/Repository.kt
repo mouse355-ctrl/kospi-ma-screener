@@ -16,6 +16,11 @@ class Settings(context: Context) {
 
     val isConfigured: Boolean get() = baseUrl.startsWith("http")
 
+    /** 상세 화면 자동 전환 간격(초). 3 또는 5 */
+    var autoPlayIntervalSec: Int
+        get() = sp.getInt("autoPlayIntervalSec", 3)
+        set(v) = sp.edit().putInt("autoPlayIntervalSec", v).apply()
+
     /** 마지막으로 알림을 보낸 기준일 (중복 알림 방지) */
     var lastNotifiedRunDate: String?
         get() = sp.getString("lastNotifiedRunDate", null)
@@ -25,6 +30,9 @@ class Settings(context: Context) {
         newOnly = sp.getBoolean("newOnly", false),
         minMarketCap = sp.getLong("minMarketCap", 0L),
         minTradingValue = sp.getLong("minTradingValue", 0L),
+        minDaysAligned = sp.getInt("minDaysAligned", 0),
+        maxDaysAligned = sp.getInt("maxDaysAligned", 0),
+        minDryDays = sp.getInt("minDryDays", 0),
         sort = runCatching { SortKey.valueOf(sp.getString("sort", null) ?: "") }.getOrDefault(SortKey.DAYS_ALIGNED),
     )
 
@@ -32,6 +40,9 @@ class Settings(context: Context) {
         .putBoolean("newOnly", f.newOnly)
         .putLong("minMarketCap", f.minMarketCap)
         .putLong("minTradingValue", f.minTradingValue)
+        .putInt("minDaysAligned", f.minDaysAligned)
+        .putInt("maxDaysAligned", f.maxDaysAligned)
+        .putInt("minDryDays", f.minDryDays)
         .putString("sort", f.sort.name)
         .apply()
 }
@@ -56,7 +67,10 @@ fun List<ScreenResult>.applyFilters(f: Filters): List<ScreenResult> {
     val filtered = filter { r ->
         (!f.newOnly || r.isNew) &&
             (f.minMarketCap <= 0 || (r.marketCap ?: 0.0) >= f.minMarketCap) &&
-            (f.minTradingValue <= 0 || (r.avgTradingValue20 ?: 0.0) >= f.minTradingValue)
+            (f.minTradingValue <= 0 || (r.avgTradingValue20 ?: 0.0) >= f.minTradingValue) &&
+            (f.minDaysAligned <= 0 || r.daysAligned >= f.minDaysAligned) &&
+            (f.maxDaysAligned <= 0 || r.daysAligned <= f.maxDaysAligned) &&
+            (f.minDryDays <= 0 || r.dryDays >= f.minDryDays)
     }
     return when (f.sort) {
         SortKey.DAYS_ALIGNED -> filtered.sortedWith(compareByDescending<ScreenResult> { it.daysAligned }.thenBy { it.name })

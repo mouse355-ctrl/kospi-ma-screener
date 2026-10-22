@@ -44,8 +44,9 @@ def _fetch_with_retry(p: Provider, info: StockInfo, start: date, end: date, trie
 def run(args: argparse.Namespace) -> dict:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     today = datetime.now(KST).date()
-    # 200일 이평 + 연속일수 계산 여유분 → 약 2년치 요청 (거래일 ≈ 245/년)
-    start = today - timedelta(days=int(os.getenv("LOOKBACK_DAYS", "730")))
+    # MA200 워밍업(199거래일) + 직전 비정배열 기간(dry_days) 측정 여유 → 약 3년치 요청
+    # (거래일 ≈ 245/년 → 약 735거래일 중 536일이 정배열 판정 가능 구간)
+    start = today - timedelta(days=int(os.getenv("LOOKBACK_DAYS", "1095")))
     # ETF/ETN/리츠/스팩/우선주 제외 (일반 기업 보통주만 스크리닝)
     exclude_non_stock = os.getenv("EXCLUDE_NON_STOCK", "true").lower() == "true"
 

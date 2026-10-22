@@ -28,4 +28,16 @@ fun fmtKrwShort(v: Double?): String {
     }
 }
 
+/** 거래일 수를 "8개월", "1년 2개월" 처럼 표시. capped 면 "이상" 의미로 + 를 붙인다. */
+fun fmtDryPeriod(days: Int, capped: Boolean = false): String {
+    if (days <= 0) return "-"
+    val suffix = if (capped) "+" else ""
+    if (days < 21) return "${days}일$suffix"
+    val months = days / 21
+    if (months < 12) return "${months}개월$suffix"
+    val years = months / 12
+    val rest = months % 12
+    return if (rest == 0) "${years}년$suffix" else "${years}년 ${rest}개월$suffix"
+}
+
 fun fmtVolume(v: Long?): String = if (v == null) "-" else won.format(v)

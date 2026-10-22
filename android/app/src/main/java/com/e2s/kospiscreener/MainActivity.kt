@@ -62,7 +62,15 @@ private fun AppNav(vm: ScreenerViewModel) {
             val code = entry.arguments?.getString("code").orEmpty()
             LaunchedEffect(code) { vm.openDetail(code) }
             val state by vm.detail.collectAsState()
-            DetailScreen(state = state, onBack = { nav.popBackStack() })
+            DetailScreen(
+                state = state,
+                onBack = { nav.popBackStack() },
+                onPrev = vm::prev,
+                onNext = vm::next,
+                onToggleAutoPlay = vm::toggleAutoPlay,
+                onSetAutoPlay = vm::setAutoPlay,
+                onSetInterval = vm::setIntervalSec,
+            )
         }
     }
 }

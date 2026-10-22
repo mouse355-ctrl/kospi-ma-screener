@@ -138,6 +138,13 @@ private fun FilterBar(f: Filters, onFilters: ((Filters) -> Filters) -> Unit) {
             value = f.minTradingValue,
             onSelect = { v -> onFilters { it.copy(minTradingValue = v) } },
         )
+        DaysChip(f) { min, max -> onFilters { it.copy(minDaysAligned = min, maxDaysAligned = max) } }
+        PresetChip(
+            prefix = "직전공백",
+            presets = Presets.dryDays.map { it.first to it.second.toLong() },
+            value = f.minDryDays.toLong(),
+            onSelect = { v -> onFilters { it.copy(minDryDays = v.toInt()) } },
+        )
         SortChip(f.sort) { s -> onFilters { it.copy(sort = s) } }
     }
 }
@@ -151,6 +158,32 @@ private fun PresetChip(prefix: String, presets: List<Pair<String, Long>>, value:
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             presets.forEach { (name, v) ->
                 DropdownMenuItem(text = { Text(name) }, onClick = { onSelect(v); open = false })
+            }
+        }
+    }
+}
+
+/** 정배열 유지일수 범위 선택 */
+@Composable
+private fun DaysChip(f: Filters, onSelect: (Int, Int) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    val label = Presets.daysAligned
+        .firstOrNull { it.second == f.minDaysAligned && it.third == f.maxDaysAligned }
+        ?.first
+        ?: when {
+            f.maxDaysAligned > 0 -> "${f.minDaysAligned.coerceAtLeast(1)}~${f.maxDaysAligned}일"
+            f.minDaysAligned > 0 -> "${f.minDaysAligned}일+"
+            else -> "제한 없음"
+        }
+    Box {
+        FilterChip(
+            selected = f.minDaysAligned > 0 || f.maxDaysAligned > 0,
+            onClick = { open = true },
+            label = { Text("유지 $label") },
+        )
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            Presets.daysAligned.forEach { (name, min, max) ->
+                DropdownMenuItem(text = { Text(name) }, onClick = { onSelect(min, max); open = false })
             }
         }
     }
@@ -203,6 +236,13 @@ private fun ResultRow(r: ScreenResult, onClick: () -> Unit) {
             Text(fmtPrice(r.close), style = MaterialTheme.typography.titleMedium)
             Text(fmtPct(r.changePct), color = pctColor, style = MaterialTheme.typography.bodySmall)
             Text("정배열 ${r.daysAligned}일", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+            if (r.dryDays > 0) {
+                Text(
+                    "직전공백 ${fmtDryPeriod(r.dryDays, r.dryCapped)}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }

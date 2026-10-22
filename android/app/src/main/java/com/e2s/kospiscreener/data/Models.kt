@@ -31,6 +31,10 @@ data class ScreenResult(
     val ma200: Double? = null,
     @SerialName("days_aligned") val daysAligned: Int,
     @SerialName("is_new") val isNew: Boolean = false,
+    /** 현재 정배열 시작 직전, 정배열이 아니었던 연속 거래일 수 */
+    @SerialName("dry_days") val dryDays: Int = 0,
+    /** 수집 데이터 한계로 dryDays 가 잘렸는지 (실제로는 더 길 수 있음) */
+    @SerialName("dry_capped") val dryCapped: Boolean = false,
     @SerialName("avg_trading_value_20") val avgTradingValue20: Double? = null,
     @SerialName("market_cap") val marketCap: Double? = null,
 )
@@ -57,6 +61,12 @@ data class Filters(
     val newOnly: Boolean = false,
     val minMarketCap: Long = 0L,
     val minTradingValue: Long = 0L,
+    /** 정배열 유지일수 하한 (0 = 제한 없음) */
+    val minDaysAligned: Int = 0,
+    /** 정배열 유지일수 상한 (0 = 제한 없음) */
+    val maxDaysAligned: Int = 0,
+    /** 직전 비정배열 기간 하한, 거래일 수 (0 = 제한 없음) */
+    val minDryDays: Int = 0,
     val sort: SortKey = SortKey.DAYS_ALIGNED,
 )
 
@@ -72,6 +82,7 @@ object Presets {
     val marketCap: List<Pair<String, Long>> = listOf(
         "제한 없음" to 0L,
         "1,000억+" to 1_000L * 100_000_000L,
+        "3,000억+" to 3_000L * 100_000_000L,
         "5,000억+" to 5_000L * 100_000_000L,
         "1조+" to 10_000L * 100_000_000L,
         "5조+" to 50_000L * 100_000_000L,
@@ -82,5 +93,26 @@ object Presets {
         "50억+" to 50L * 100_000_000L,
         "100억+" to 100L * 100_000_000L,
         "500억+" to 500L * 100_000_000L,
+    )
+
+    /** 직전 비정배열 기간 하한 (라벨, 거래일 수). 1개월 ≈ 21거래일 */
+    val dryDays: List<Pair<String, Int>> = listOf(
+        "제한 없음" to 0,
+        "1개월+" to 21,
+        "3개월+" to 63,
+        "6개월+" to 126,
+        "1년+" to 252,
+    )
+
+    /** 정배열 유지일수 범위 (라벨, 하한, 상한). 0 = 제한 없음 */
+    val daysAligned: List<Triple<String, Int, Int>> = listOf(
+        Triple("제한 없음", 0, 0),
+        Triple("1~3일", 1, 3),
+        Triple("1~5일", 1, 5),
+        Triple("1~10일", 1, 10),
+        Triple("1~20일", 1, 20),
+        Triple("20일+", 20, 0),
+        Triple("60일+", 60, 0),
+        Triple("120일+", 120, 0),
     )
 }
