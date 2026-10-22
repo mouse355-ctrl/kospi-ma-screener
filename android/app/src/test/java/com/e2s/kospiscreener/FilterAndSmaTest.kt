@@ -29,7 +29,10 @@ class FilterAndSmaTest {
 
     @Test fun marketCapAndTradingValue() {
         assertEquals(listOf("A", "C"), rows.applyFilters(Filters(minMarketCap = 1_000_000_000_000L)).map { it.code })
-        assertEquals(listOf("C"), rows.applyFilters(Filters(minTradingValue = 100L * 100_000_000L)).map { it.code })
+        // 거래대금 100억 이상 → A(500억), C(2,000억)
+        assertEquals(listOf("A", "C"), rows.applyFilters(Filters(minTradingValue = 100L * 100_000_000L)).map { it.code })
+        // 1,000억 이상 → C 만
+        assertEquals(listOf("C"), rows.applyFilters(Filters(minTradingValue = 1_000L * 100_000_000L)).map { it.code })
     }
 
     @Test fun daysAlignedRange() {
